@@ -38,28 +38,30 @@ static int impulse_sample_count = 0;
 //}
 //came up with better way
 int get_samples() { //Return i wnt/ diff vals to process for distinguishing different levels of impulses
-  //  long t0 = micros();
   unsigned long long initial;
   int16_t analog;
   analogRead(A0); //first read takes longer
   for (int i = 0; i < SAMPLE_SIZE; i++) {
     analog = analogRead(A0);
     fast_samples[i] = analog;
-
-    if (impulse_sample_count < IMPULSE_SIZE)  impulse_samples[impulse_sample_count++] = analog;
+    
+    if (impulse_sample_count < IMPULSE_SIZE)  {
+      impulse_samples[impulse_sample_count++] = analog;
+    }
     else {
-      if (pascal_to_dBSPL(impulse_rms()) > 105) { //10 ms (don't know how to avoid currently)
+//      long t0 = micros();
+      if (impulse_rms() > 3.55) { //11.4 ms (don't know how to avoid currently)
         impulse_samples[0] = analog;
         impulse_sample_count = 1; //reset impulse_sample_count when array is filled
         return 1;//4 us, including print statement time; not going to affect readings
       }
-
+//      Serial.println(micros() - t0);
       impulse_samples[0] = analog;
       impulse_sample_count = 1; //reset impulse_sample_count when array is filled
     }
     while (micros() - initial <= sample_period_micros) {};
   }
-  //  Serial.println(micros() - t0);
+  
   return 0;
 }
 
